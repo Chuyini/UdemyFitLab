@@ -11,7 +11,8 @@ void main() {
 //IOS no tiene AppBarr, si no que tiene un navegationBar
 
 class UserData extends InheritedWidget {
-  final List<String> booksIDs;
+  final List<String>
+      booksIDs; //<-- Cual es la informacion que se debe retener o heredar
 
   const UserData({Key? key, required this.booksIDs, required Widget child})
       : super(key: key, child: child);
@@ -23,63 +24,51 @@ class UserData extends InheritedWidget {
     //
     return true;
   }
+
+  //Con esta funcion accedemos a los los datos de la tierra heredada, que como tal no es necesario
+  static UserData of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<UserData>()!;
+  }
+}
+
+//Vamos a conetener el arbol o la tierra heredada en un StateFul
+class UserDataContainerWidget extends StatefulWidget {
+  final Widget child;
+
+  UserDataContainerWidget(this.child);
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    throw UnimplementedError();
+  }
+}
+
+class _UserDataContainerWidget extends State<UserDataContainerWidget> {
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    throw UnimplementedError();
+  }
 }
 
 class Booksy extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var booksId = ["Chopin", "Goulgas"];
+    var booksId = [
+      "douglas-hitch"
+    ]; //<-- Esto se obtiene normalmente del servidor
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "Booksy",
         ),
       ), //<-- Barra de arriba
-      body: UserData(
-        booksIDs: booksId,
-        child: Container(
-          //Hay restricciones
-          padding: EdgeInsets.symmetric(
-              horizontal: 40), //<-- solo container recibe este parametro
-          child: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                //<--agregamos el single scroll view en la columna
-                child: Column(
-                  //Column recibe a fuerzas un childre?
-
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: 100.0),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        boxShadow: [BoxShadow(blurRadius: 8)],
-                      ),
-                      child: Image(
-                        image: AssetImage(
-                            'Images/cover.jpg'), //AssetImage nos permite acceder
-                        //a recursos del proyecto
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 30.0),
-                    ),
-                    BookDescription(
-                      "The Echo Enigma",
-                      "Elena Ferrante",
-                      "In a coastal Italian village, archaeologist Lucia Moretti discovers an ancient manuscript that could change history. Pursued by a "
-                          "secret society, she must unravel the manuscript’s mysteries and uncover her family’s hidden past before it’s too late.",
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 20.0),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          color: Colors.white70,
+      body: UserDataContainerWidget(
+        //este es el arbol de Widgest donde esta contenido nuestro book screen
+        UserData(
+          booksIDs: booksId,
+          child: BookScreen(),
         ),
       ),
     );
@@ -88,7 +77,7 @@ class Booksy extends StatelessWidget {
     throw UnimplementedError();
   }
 }
-//El container tiene restrriciciones a sus hijos por lo  que
+//El container tiene restriciones a sus hijos por lo  que
 ///aveces no dejara darale ciertos atributos
 ///es como si no te permitiera hacer algo porque ya mando hacer otra cosa de manera global
 ///y no deja cambiarla
@@ -153,13 +142,19 @@ class BookDescription extends StatelessWidget {
             fontSize: 20,
           ),
         ),
-        AddButtonBook(),
+        AddButtonBook("douglas-hitch"),
+        //<-- supongamos quele pasamos el ID a este constructor o widget
       ],
     );
   }
 }
 
-class AddButtonBook extends StatefulWidget {
+class AddButtonBook extends StatelessWidget {
+  final String bookId;
+
+  AddButtonBook(this.bookId);
+
+/*
   @override
   State<StatefulWidget> createState() {
     ///Esta clase padre hace uso de otra logica, al ser un Widgetde estado
@@ -168,16 +163,20 @@ class AddButtonBook extends StatefulWidget {
     return _AddButtonBook();
 
     ///<-- Aqui implementamos el Widget de estado
-  }
-}
-
-class _AddButtonBook extends State<AddButtonBook> {
-  bool _isSaved = false;
+  }*/
 
   @override
   Widget build(BuildContext context) {
+    var userData =
+        UserData.of(context); //<--accedemos a los datos de la tierra heredada
+    bool _isSaved = userData.booksIDs.contains(
+        bookId); //<-- aqui accedemos al widget.bookId del padre o donde se guarda el BookId
     // TODO: implement build
-    var button = _isSaved
+    //aqui se accede directamente a los datos del arbol ppero por conjvencion se hace en otro lado
+    /// [var [userData] = context.dependOnInheritedWidgetOfExactType<UserData>()!];
+    /// [userData.booksIDs];
+    var button = _isSaved //guardamos un widget dependediendendo el estado
+        //Despues se lo pasamos al widget ddonde está el boton
         ? ElevatedButton(
             onPressed: _manageBookLibrary,
             child: Text("Quitar de la libreria"),
@@ -194,9 +193,9 @@ class _AddButtonBook extends State<AddButtonBook> {
           );
 
     return Directionality(
-      //<-- de ley se ocupa para que envuelva al elevatedButton  y darle direccion si no nos marca error
+      //<-- de ley se ocupa para que envuelva al elevatedButton y darle direccion si no nos marca error
       textDirection: TextDirection.ltr,
-      child: button,
+      child: button, //aqui recibe el widget
     );
     //<-- al onPress se le tiene que pasar una funicion vacia, si es null se desactiva
     //Elevated button ademas no tiene una direccion hay que darsela en el child en ese caso un text con ese constructor
@@ -204,16 +203,68 @@ class _AddButtonBook extends State<AddButtonBook> {
 
   //creamos una funcion afuera del metodo build pero es parte de la clase
   void _manageBookLibrary() {
-    //Actualizar el backend y actualizar la BD
-    setState(() {
+    //Actualizar el backend y actualizar la BD con metodo async y largo
+    //Actualiar la data del inherited widget
+    /*setState(() {
       //necesario para que cambie
       //esta funcion necesitra otra funcion, es para decirle a flutter, que vuelva a cargar esta parte
       this._isSaved = !this._isSaved;
-    });
+    });*/
+    //Llamar al setState
 
     ///De hecho no es necesario meter lo que cambiamos, con llamar a setState es mas que sifiente
     ///ya que se vuelve a llamar el build
     ///Pero por convencion se pone adentro para que qued
+  }
+}
+
+class BookScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      //Hay restricciones
+      padding: EdgeInsets.symmetric(
+          horizontal: 40), //<-- solo container recibe este parametro
+      child: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            //<--agregamos el single scroll view en la columna
+            child: Column(
+              //Column recibe a fuerzas un childre?
+
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(top: 100.0),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [BoxShadow(blurRadius: 8)],
+                  ),
+                  child: Image(
+                    image: AssetImage(
+                        'Images/cover.jpg'), //AssetImage nos permite acceder
+                    //a recursos del proyecto
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 30.0),
+                ),
+                BookDescription(
+                  "The Echo Enigma",
+                  "Elena Ferrante",
+                  "In a coastal Italian village, archaeologist Lucia Moretti discovers an ancient manuscript that could change history. Pursued by a "
+                      "secret society, she must unravel the manuscript’s mysteries and uncover her family’s hidden past before it’s too late.",
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 20.0),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      color: Colors.white70,
+    );
   }
 }
 
@@ -223,3 +274,13 @@ class _AddButtonBook extends State<AddButtonBook> {
 ///Cuppertino--> Para ios, que es donde estan las instalaciones de IOS
 
 //Estas bibliotecas proveen un desarrollo estandar, como por ejemplo mandar los widgets a la zona segura
+
+//Todo: Inheretwidget y setState
+
+/*InheritedWidget: Excelente para datos globales. No reemplaza setState(), sino que facilita la accesibilidad a datos en all el árbol de widgets.
+
+setState(): Necesario para actualizar estados locales específicos.
+
+Ambos tienen roles importantes y se pueden complementar. InheritedWidget notifica los cambios y proporciona datos, mientras que setState() gestiona las actualizaciones de esos datos.
+
+Espero que esto a*/
