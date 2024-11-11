@@ -18,11 +18,11 @@ class UserData extends InheritedWidget {
       : super(key: key, child: child);
 
   @override
-  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
+  bool updateShouldNotify(UserData oldWidget) {
     ///Esta funcio responde hace la siguiente pregunta por eso retorna un bool
     // TODO: Debo notificar a mis hijos para que se actualicen ?
     //
-    return true;
+    return booksIDs != oldWidget.booksIDs;
   }
 
   //Con esta funcion accedemos a los los datos de la tierra heredada, que como tal no es necesario
@@ -32,23 +32,46 @@ class UserData extends InheritedWidget {
 }
 
 //Vamos a conetener el arbol o la tierra heredada en un StateFul
+//Como lo que queremos es que sea dinámico lo que vamos a hacer encerrar todo esto en
+//un stateful widget
 class UserDataContainerWidget extends StatefulWidget {
   final Widget child;
 
-  UserDataContainerWidget(this.child);
+  UserDataContainerWidget({required this.child});
 
   @override
-  State<StatefulWidget> createState() {
+  _UserDataContainerWidgetState createState() {
     // TODO: implement createState
-    throw UnimplementedError();
+    return _UserDataContainerWidgetState();
   }
 }
 
-class _UserDataContainerWidget extends State<UserDataContainerWidget> {
+class _UserDataContainerWidgetState extends State<UserDataContainerWidget> {
+  List<String> localBooksId = [];
+
+  //Creamos este metodo para accede los widgets ancestros o hacia atras y no escribir tanto cuando se llame
+  static _UserDataContainerWidgetState of(BuildContext context) {
+    return context.findAncestorStateOfType<_UserDataContainerWidgetState>()!;
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    throw UnimplementedError();
+    return UserData(
+        booksIDs: List.from(localBooksId), //aqui le da los datos
+        child: widget.child); //<-- aqui se actualizan los datos
+  }
+
+  void addToLibrary(String bookId) {
+    setState(() {
+      localBooksId.add(bookId);
+    });
+  }
+
+  void removedToLibrary(String bookId) {
+    setState(() {
+      localBooksId.remove(bookId);
+    });
   }
 }
 
@@ -66,10 +89,8 @@ class Booksy extends StatelessWidget {
       ), //<-- Barra de arriba
       body: UserDataContainerWidget(
         //este es el arbol de Widgest donde esta contenido nuestro book screen
-        UserData(
-          booksIDs: booksId,
-          child: BookScreen(),
-        ),
+
+        child: BookScreen(),
       ),
     );
 
@@ -175,22 +196,27 @@ class AddButtonBook extends StatelessWidget {
     //aqui se accede directamente a los datos del arbol ppero por conjvencion se hace en otro lado
     /// [var [userData] = context.dependOnInheritedWidgetOfExactType<UserData>()!];
     /// [userData.booksIDs];
-    var button = _isSaved //guardamos un widget dependediendendo el estado
-        //Despues se lo pasamos al widget ddonde está el boton
-        ? ElevatedButton(
-            onPressed: _manageBookLibrary,
-            child: Text("Quitar de la libreria"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blueAccent,
-            ),
-          )
-        : ElevatedButton(
-            onPressed: _manageBookLibrary,
-            child: Text("Agregar a la libreria"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber,
-            ),
-          );
+    var button =
+        _isSaved //guardamos un widget dependediendendo el estado (True o False)
+            //Despues se lo pasamos al widget ddonde está el boton
+            ? ElevatedButton(
+                onPressed: () {
+                  _removedBookLibrary(context);
+                },
+                child: Text("Quitar de la libreria"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                ),
+              )
+            : ElevatedButton(
+                onPressed: () {
+                  _addBookLibrary(context);
+                },
+                child: Text("Agregar a la libreria"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber,
+                ),
+              );
 
     return Directionality(
       //<-- de ley se ocupa para que envuelva al elevatedButton y darle direccion si no nos marca error
@@ -202,7 +228,7 @@ class AddButtonBook extends StatelessWidget {
   }
 
   //creamos una funcion afuera del metodo build pero es parte de la clase
-  void _manageBookLibrary() {
+  void _addBookLibrary(BuildContext context) {
     //Actualizar el backend y actualizar la BD con metodo async y largo
     //Actualiar la data del inherited widget
     /*setState(() {
@@ -215,6 +241,33 @@ class AddButtonBook extends StatelessWidget {
     ///De hecho no es necesario meter lo que cambiamos, con llamar a setState es mas que sifiente
     ///ya que se vuelve a llamar el build
     ///Pero por convencion se pone adentro para que qued
+    //  var userDataContainerState = context.findAncestorStateOfType<//<-- cuidado de que no sea render
+    //  _UserDataContainerWidgetState>(); //<-- sirve para buscar en todos los ancestro, es decir todos los widgets hacia atras
+    //otra forma es
+
+    var userDataContainerState = _UserDataContainerWidgetState.of(context);
+    userDataContainerState.addToLibrary(bookId);
+  }
+
+  void _removedBookLibrary(BuildContext context) {
+    //Actualizar el backend y actualizar la BD con metodo async y largo
+    //Actualiar la data del inherited widget
+    /*setState(() {
+      //necesario para que cambie
+      //esta funcion necesitra otra funcion, es para decirle a flutter, que vuelva a cargar esta parte
+      this._isSaved = !this._isSaved;
+    });*/
+    //Llamar al setState
+
+    ///De hecho no es necesario meter lo que cambiamos, con llamar a setState es mas que sifiente
+    ///ya que se vuelve a llamar el build
+    ///Pero por convencion se pone adentro para que qued
+    //  var userDataContainerState = context.findAncestorStateOfType<//<-- cuidado de que no sea render
+    //  _UserDataContainerWidgetState>(); //<-- sirve para buscar en todos los ancestro, es decir todos los widgets hacia atras
+    //otra forma es
+
+    var userDataContainerState = _UserDataContainerWidgetState.of(context);
+    userDataContainerState.removedToLibrary(bookId);
   }
 }
 
