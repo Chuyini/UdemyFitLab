@@ -1,83 +1,122 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MaterialApp(
-    //<-- Si fuera IOS tendriamos que usar MaterialCupertino
-    //si hacemos cambios fuera del build ocupamos un Hot reload
-    home: Scaffold(
-      appBar: AppBar(
-        title: Text("SomeApp"),
-      ),
-      body: SomeScreen(),
-    ),
-    title: "Some App",
+  runApp(const MaterialApp(
+    home: KeysApp(),
   ));
 }
 
-class SomeScreen extends StatelessWidget {
+class KeysApp extends StatefulWidget {
+  const KeysApp({Key? key}) : super(key: key);
+
+  @override
+  State<KeysApp> createState() => _KeysAppState();
+}
+
+class _KeysAppState extends State<KeysApp> {
+  static Color rojo = Color.fromARGB(100, 200, 0, 0);
+  static Color verde = Color.fromARGB(100, 200, 0, 0);
+
+  var celdas = [
+    ColorCelda(
+      color: rojo,
+      label: "Rojo",
+      key: ObjectKey(rojo),
+    ),
+    ColorCelda(
+      color: verde,
+      label: "Verde",
+      key: ObjectKey(verde),
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-
-    //Theme.of(context);
-    //Scaffold.of(context);
-    //Provider of
-    return Column(
-      children: [
-        Container(
-          child: Text("Hola Flutter"),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Ejemplo de Keys"),
+      ),
+      body: Center(
+        child: Column(
+          children: celdas,
         ),
-        SomeOtherScreen(),
-        ElevatedButton(
-          onPressed: () {
-            Scaffold.of(context).showBottomSheet(
-              (context) => Container(
-                child: Directionality(
-                  textDirection: TextDirection.ltr,
-                  child: Text("Algo"),
-                ),
-                padding: EdgeInsets.all(30.0),
-                color: Colors.green,
-                width: double.infinity,
-              ),
-            ); //agarra este context y busca su Scaffold mas cercano o proximo hacia arriba en el arbol
-            //Y agrega este bottomShet con este container y sus propiedades
-            ///Cuidado con donde llamamos Scaffold dado que puede que ni siquiera se haya creado en el context
-            ///o no se ha creado o no es padre
-            ///Podemos usar el builder en el caso de que el scaffold haya quedado corto para agregar un nivel mas
-            ///y se pueda reconocer el scaffold
-            ///
-            /// body: Builder(builder:(nuevoContextoActualizado){
-            ///return ElevatedButton(
-            ///Onpress:(){
-            ///Scaffold.of(nuevoContextoActualizado).haceralgo
-            ///}
-            ///);
-            ///
-            ///}
-            ///
-          },
-          child: Text("Presioname"),
-        ),
-      ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _swapColors,
+        child: const Icon(Icons.update_rounded),
+      ),
     );
   }
-}
 
-class SomeOtherScreen extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-    return _SomeOtherScreenState();
+  _swapColors() {
+    setState(() {
+      var temp = celdas[0];
+      celdas[0] = celdas[1];
+      celdas[1] = temp;
+    });
   }
 }
 
-class _SomeOtherScreenState extends State<SomeOtherScreen> {
+class ColorCelda extends StatefulWidget {
+  final Color color;
+  final String label;
+
+  const ColorCelda({
+    required this.color,
+    required this.label,
+    Key? key,
+  }) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    return Directionality(textDirection: TextDirection., child: child);
+  _ColorCeldaState createState() => _ColorCeldaState();
+}
+
+class _ColorCeldaState extends State<ColorCelda> {
+  late Color color;
+  late String label;
+
+  @override
+  void initState() {
+    super.initState();
+    color = widget.color;
+    label = widget.label;
   }
+
+  @override
+  Widget build(BuildContext context) => Container(
+        color: color,
+        child: ListTile(
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          title: Text(label),
+        ),
+      );
 }
 
 ///Los buldscontext saben sobre su padre
+///
+/// que son las Keys
+///
+///Sirven para que flutter pueda comparar Widgets cuando tenga que hacer un rebuild
+///
+/// Por defecto,flutter compara el runtimType(Tipo)del widget, pero si existe una key, compara el runtipe y la key
+
+///Todo Global Keys y LocalKeys
+///
+/// Las Globalkeys son llaves unicas para toda la App
+/// Las Local Keys <-- tienen que ser unicas entre hermanos, es decir unicas para todos los ELEMENTS con el mismo padre
+///   Los tipos son :
+///     valueKeys
+///     ObjectKeys
+///     UniqueKeys
+///
+///     puedes usar
+///     key:const ValueKey("Verde") <-- delega igualdad en los tipos. Y será basandose en lo que tu pongas
+///                                     debes de cuidar no poner misma key porqye te saldra "Duplicate Key found" entre hermanos
+///     var Verde = const Color.from(100,0,0);
+///     var Rojo = const Color.from(0,100,0);
+///         Cuando tienen const asegurarse de que no tengan mismo valores
+///         pero sin const no importa
+///     key:ObjectKey("Verde");
+///     key:ObjectKey("Rojo");
+///
