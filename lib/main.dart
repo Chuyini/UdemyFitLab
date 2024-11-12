@@ -1,96 +1,142 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MaterialApp(
-    home: KeysApp(),
-  ));
+  runApp(
+    MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Center(
+            child: Text(
+              "Booksy",
+            ),
+          ),
+        ),
+        body: Profile(),
+      ),
+    ),
+  );
 }
 
-class KeysApp extends StatefulWidget {
-  const KeysApp({Key? key}) : super(key: key);
-
-  @override
-  State<KeysApp> createState() => _KeysAppState();
-}
-
-class _KeysAppState extends State<KeysApp> {
-  static Color rojo = Color.fromARGB(100, 200, 0, 0);
-  static Color verde = Color.fromARGB(100, 200, 0, 0);
-
-  var celdas = [
-    ColorCelda(
-      color: rojo,
-      label: "Rojo",
-      key: ObjectKey(rojo),
-    ),
-    ColorCelda(
-      color: verde,
-      label: "Verde",
-      key: ObjectKey(verde),
-    ),
-  ];
-
+class Profile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Ejemplo de Keys"),
-      ),
-      body: Center(
-        child: Column(
-          children: celdas,
+    return Column(
+      children: [
+        Stack(
+          alignment: AlignmentDirectional.topEnd,
+          children: [
+            Container(
+              child: Image(
+                image: AssetImage("Images/back.jpg"),
+              ),
+            ),
+            CircleAvatar(
+              backgroundImage: AssetImage("Images/gato.jpeg"),
+              radius: 40.0,
+            ),
+          ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _swapColors,
-        child: const Icon(Icons.update_rounded),
-      ),
+        Container(
+          padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 20.0),
+          child: const Text(
+            "mas corto Caminando por el bosque, Ana encontró una llave dorada enterrada bajo un árbol. Emocionada, decidió seguir buscando pistas. Su aventura apenas comenzaba. 🌳🔑🚶‍♀️",
+            style: const TextStyle(fontSize: 20.0),
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+          child: Row(
+            children: [
+              Icon(
+                Icons.account_balance_wallet,
+                size: 70.0,
+              ),
+              Expanded(
+                //<-- fuerza a los hijos a dibujarse dentro del display
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("Libro leidos"),
+                    const Text(
+                      "Numero de libros que este usuario ha finalizado",
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              const Text(
+                "104",
+                style: TextStyle(
+                  fontSize: 20.00,
+                ),
+              ),
+            ],
+          ),
+        ),
+        ListTile(
+          //<-- una celda en una lista
+          contentPadding: EdgeInsets.symmetric(horizontal: 30.0),
+          title: Text(
+            "Lista de libros deseados",
+          ),
+          subtitle: Text("Numero de libros en la lista de deseos"),
+          leading: Icon(
+            Icons.book,
+            size: 50,
+          ),
+          trailing: Text(
+            "234",
+            style: TextStyle(fontSize: 20.0),
+          ),
+        ),
+        Text(
+          "Redes Sociales",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 20.00,
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(15.00),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.ac_unit),
+              iconSize: 50.0,
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.accessible_forward_outlined),
+              iconSize: 50.0,
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.adb_outlined),
+              iconSize: 50.0,
+            ),
+          ],
+        ),
+        Padding(padding: EdgeInsets.symmetric(vertical: 20.0)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {},
+              child: Text("Agregar Amigo"),
+            ),
+            ElevatedButton(
+              onPressed: () {},
+              child: Text("Enviar mensaje"),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            ),
+          ],
+        ),
+      ],
     );
   }
-
-  _swapColors() {
-    setState(() {
-      var temp = celdas[0];
-      celdas[0] = celdas[1];
-      celdas[1] = temp;
-    });
-  }
-}
-
-class ColorCelda extends StatefulWidget {
-  final Color color;
-  final String label;
-
-  const ColorCelda({
-    required this.color,
-    required this.label,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  _ColorCeldaState createState() => _ColorCeldaState();
-}
-
-class _ColorCeldaState extends State<ColorCelda> {
-  late Color color;
-  late String label;
-
-  @override
-  void initState() {
-    super.initState();
-    color = widget.color;
-    label = widget.label;
-  }
-
-  @override
-  Widget build(BuildContext context) => Container(
-        color: color,
-        child: ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          title: Text(label),
-        ),
-      );
 }
 
 ///Los buldscontext saben sobre su padre
@@ -120,3 +166,5 @@ class _ColorCeldaState extends State<ColorCelda> {
 ///     key:ObjectKey("Verde");
 ///     key:ObjectKey("Rojo");
 ///
+
+///Layouts, sirven para almacenar un hijo o  varios
